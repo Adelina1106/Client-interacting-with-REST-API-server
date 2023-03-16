@@ -1,0 +1,59 @@
+Rizea Adelina-Maria
+
+    In fisierul client.c citesc intr-o bucla infinita una cate una comenzile
+date de utilizator la tastaura pana cand se va introduce comanda exit.
+    Pentru fiecare comanda primita, este respectat un tipar. Citesc datele
+de la tastaura in cazul in care este necesar(pentru register, login,
+add_book, get_book, delete_book), formatez mesajul ce trebuie transmis
+(alegerile pentru formatarea mesajelor sunt justificate mai jos) si trimit
+cererea de tip GET/POST/DELETE catre server(cu ajutorul functtilor
+compute_get_request, compute_post_request, send_to_server si 
+receive_from_server). Prelucrez mesajul primit, extragand datele de care am
+nevoie (status code, cartile ce trebuie afisate etc.).
+    In functie de status code, afisez mesajul pentru utilizator. Pentru toate
+comenzile in afara de register, login, logout si exit, verific daca
+utilizatorul are acces la biblioteca. Pentru enter_library si logout, verific
+daca exista un utilizator conectat.
+    
+    Pe langa acest tipar, odata cu inregistrarea unui utilizator,
+verific ca numele de utilizator si parola sa nu contina spatii si,
+in functie de status code-ul raspunsului primit de la server, utilizatorul dat
+sa nu fie deja inregistrat.
+    Pentru a retine daca un utilizator este deja conectat sau nu(login), am
+retinut in cookies[0] valoarea cookie-ului de sesiune sau NULL in cazul in care
+nu exista un client logat. Astfel, daca aceasta varibila are valoarea NULL,
+trimit cererea de tip POST si in fucntie de status code-ul primit, afisez
+un mesaj corespunzator pentru utilizator("Error: Wrong credentials", 
+"200 - OK -Login successfully\n" sau "Error" urmat de un cod de eroare).
+    In cazul comenzii enter_library, retin in JWT_token token-ul JWT. Astfel,
+acesta are valoarea NULL daca clientul conectat nu are acces la biblioteca
+sau are valoarea propriu-zisa a token-ului daca are acces. Acesta va fi
+trimis ca parametru functiilor de compunere a cererilor, pentru adaugarea
+header-ului authorization.
+    Pentru get_books, preiau din raspunsul server-ului informatiile despre
+carti si le afisez pentru utilizator. Similar, pentru get_book, in functie
+de status code, verific daca cartea cu id-ul dat exista sau nu.
+    La primirea comenzii add_book, verific corectitudinea datelor primite,
+numarul de pagini fiind alcatuit doar din cifre, fara litere sau spatii,
+afisand mesajul "Wrong format" daca datele primite nu corespund cu formatul
+cerut.
+    Pentru comanda delete_book, am format cererea de tip DELETE prin
+schimbarea unei cereri de tip GET, modificand inceputul acesteia din
+"GET" in "DELETE".
+    La comanda logout, eliberez memoria pentru atat JWT_token, cat si
+cookies[0] (ce retin accesul la biblioteca si conectarea unui utilizator)
+si le setez pe NULL.
+
+    In fisierul requests.c din laborator, am modificat functiile
+compute_get_request si compute_post_request, adaugandu-le un parametru
+token_jwt. Daca acesta este diferit de NULL(adica in client s-a apelat
+enter_library, iar valoarea trimisa functiei este aceeasi cu cea a token-ului
+JWT primit de la server), se adauga mesajului header-ul authorization.
+
+    Pentru formatarea datelor trimise catre server am folosit biblioteca
+recomandata pentru formatarea JSON(parson.c), deoarece exemplul "Serialization"
+(dupa care m-am si ghidat)dat in README-ul proiectului mi s-a parut usor de
+inteles si de aplicat. Pentru formatarea datelor primite de la server, am
+strstr, strtok, sscanf unde am avut nevoie, deoarece mi s-a parut mai usor,
+preluand doar status code-ul sau elemente bine delimitate(de exemplu,
+token-ul JWT, informatiile despre carti).
